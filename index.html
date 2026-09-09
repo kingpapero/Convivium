@@ -340,6 +340,20 @@ const THEMES = ["The meaning of life","Death","Freedom","Power","Love","Evil","G
 /* ════════════════════════════════════════════
    STATE
 ════════════════════════════════════════════ */
+// iOS consente la riproduzione solo su un elemento "sbloccato" durante un tocco.
+// Ne teniamo uno solo e gli cambiamo la sorgente a ogni turno.
+const player = new Audio();
+player.preload = "auto";
+const SILENT = "data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
+function unlockAudio(){
+  try {
+    player.src = SILENT;
+    const p = player.play();
+    if(p && p.then) p.then(()=>{ player.pause(); player.currentTime = 0; }).catch(()=>{});
+  } catch(e){}
+}
+
 const S = {
   src:"demo",
   mode:"solo",
@@ -551,39 +565,46 @@ function playFrom(idx, demo){
     if(!S.sound){ typeMessage(msg, advance); return; }
 
     // Audio pre-generato da scripts/generate_audio.py. Se manca, si degrada a solo testo.
-    const audio = new Audio("audio/" + demo.id + "-" + idx + ".mp3");
-    S.audio = audio;
     let started = false;
+
+    const cleanup = () => {
+      player.removeEventListener("loadedmetadata", onMeta);
+      player.removeEventListener("error", onErr);
+    };
 
     const begin = (durationMs) => {
       if(started) return;
       started = true;
+      cleanup();
       typeMessage(msg, () => {
         // se la voce sta ancora parlando, aspettiamo che finisca
-        if(S.audio === audio && !audio.paused && !audio.ended){
-          audio.addEventListener("ended", advance, { once:true });
+        if(S.sound && !player.paused && !player.ended){
+          player.addEventListener("ended", advance, { once:true });
         } else advance();
       }, durationMs);
     };
 
-    audio.addEventListener("loadedmetadata", () => {
-      const d = isFinite(audio.duration) ? audio.duration * 1000 : null;
-      audio.play().catch(()=>{});   // autoplay bloccato: si scrive comunque
-      begin(d);
-    });
-    audio.addEventListener("error", () => {
+    const onMeta = () => begin(isFinite(player.duration) ? player.duration * 1000 : null);
+    const onErr  = () => {
       if(!S.audioWarned){
         S.audioWarned = true;
-        S.msgs.push({role:"sys", content:"\u266a Audio files not found \u2014 run scripts/generate_audio.py, or serve the folder over HTTP."});
+        S.msgs.push({role:"sys", content:"\u266a Audio not found \u2014 the mp3 files are missing from audio/."});
+        renderDialogue();
       }
       begin(null);
-    });
-    setTimeout(() => begin(null), 2500);   // rete lenta o file assente
+    };
+
+    player.addEventListener("loadedmetadata", onMeta);
+    player.addEventListener("error", onErr);
+    player.src = "audio/" + demo.id + "-" + idx + ".mp3";
+    player.load();
+    player.play().catch(()=>{});          // parte appena i dati bastano
+    setTimeout(() => begin(null), 8000);  // rete molto lenta: si scrive comunque
   }, 620);
 }
 
 function stopAudio(){
-  if(S.audio){ try { S.audio.pause(); } catch(e){} S.audio = null; }
+  try { player.pause(); player.currentTime = 0; } catch(e){}
 }
 
 function stopPlayback(){
@@ -1025,6 +1046,7 @@ function updateSoundBtn(){
 }
 
 $("btn-sound").addEventListener("click",()=>{
+  if(!S.sound) unlockAudio();   // deve avvenire dentro il tocco, o iOS blocca tutto
   S.sound = !S.sound;
   updateSoundBtn();
   stopAudio();
