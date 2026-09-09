@@ -344,13 +344,22 @@ const THEMES = ["The meaning of life","Death","Freedom","Power","Love","Evil","G
 // Ne teniamo uno solo e gli cambiamo la sorgente a ogni turno.
 const player = new Audio();
 player.preload = "auto";
+player.setAttribute("playsinline", "");
+player.setAttribute("webkit-playsinline", "");
 const SILENT = "data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
+let audioUnlocked = false;
+
 function unlockAudio(){
+  if(audioUnlocked) return;
   try {
     player.src = SILENT;
     const p = player.play();
-    if(p && p.then) p.then(()=>{ player.pause(); player.currentTime = 0; }).catch(()=>{});
+    audioUnlocked = true;
+    // la pausa arriva in ritardo: fermiamo solo se \u00e8 ancora il silenzio a suonare
+    if(p && p.then) p.then(()=>{
+      if(player.src === SILENT || player.src.indexOf("data:audio") === 0) player.pause();
+    }).catch(()=>{ audioUnlocked = false; });
   } catch(e){}
 }
 
@@ -597,14 +606,20 @@ function playFrom(idx, demo){
     player.addEventListener("loadedmetadata", onMeta);
     player.addEventListener("error", onErr);
     player.src = "audio/" + demo.id + "-" + idx + ".mp3";
-    player.load();
-    player.play().catch(()=>{});          // parte appena i dati bastano
+    const p = player.play();
+    if(p && p.catch) p.catch(() => {
+      // WebKit rifiuta se i dati non bastano ancora: si ritenta quando \u00e8 pronto
+      player.addEventListener("canplay", () => { player.play().catch(()=>{}); }, { once:true });
+    });
     setTimeout(() => begin(null), 8000);  // rete molto lenta: si scrive comunque
   }, 620);
 }
 
 function stopAudio(){
-  try { player.pause(); player.currentTime = 0; } catch(e){}
+  try {
+    player.pause();
+    if(player.currentTime) player.currentTime = 0;
+  } catch(e){}
 }
 
 function stopPlayback(){
