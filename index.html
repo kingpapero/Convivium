@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Convivium — The eternal dialogue of great minds</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0805;--bg2:#110e09;--bg3:#1a1510;
+  --gold:#c9a84c;--gold2:#e8c97a;--gold-dim:#7a6030;
+  --ink:#d4c9a8;--ink-dim:#8a7d60;--red2:#c04040;
+  --border:#2a2218;--border2:#3d3020;--green:#4a7c59;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+
+.shell{display:flex;flex-direction:column;height:100dvh;background:var(--bg);overflow:hidden}
+
+header{flex-shrink:0;text-align:center;padding:12px 16px 9px;border-bottom:1px solid var(--border2);position:relative}
+header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.title-ornament{font-family:'Cinzel',serif;font-size:9px;letter-spacing:5px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:2px}
+h1{font-family:'Cinzel',serif;font-size:clamp(17px,5vw,36px);font-weight:600;color:var(--gold2);letter-spacing:4px;line-height:1;text-shadow:0 0 40px rgba(201,168,76,0.2)}
+.subtitle{font-family:'IM Fell English',serif;font-style:italic;color:var(--ink-dim);font-size:12px;margin-top:2px}
+
+/* ── SOURCE SWITCH ── */
+.srcbar{flex-shrink:0;display:flex;border-bottom:1px solid var(--border2);background:var(--bg2)}
+.srcbtn{flex:1;padding:8px 6px;background:transparent;border:none;border-right:1px solid var(--border2);color:var(--ink-dim);font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .18s}
+.srcbtn:last-child{border-right:none}
+.srcbtn.active{background:var(--gold);color:var(--bg);font-weight:600}
+
+/* ── DEMO BAR ── */
+.demobar{flex-shrink:0;border-bottom:1px solid var(--border);background:var(--bg2);padding:9px 14px}
+.demobar-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:7px}
+.demo-list{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.demo-list::-webkit-scrollbar{display:none}
+.demo-card{flex:0 0 auto;max-width:230px;text-align:left;padding:7px 11px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;transition:all .16s;font-family:'Crimson Pro',serif}
+.demo-card:hover{border-color:var(--gold-dim)}
+.demo-card.on{border-color:var(--gold);background:rgba(201,168,76,0.1)}
+.dc-title{font-family:'IM Fell English',serif;font-size:14px;color:var(--gold2);line-height:1.2;margin-bottom:2px}
+.dc-who{font-size:11px;font-style:italic;color:var(--ink-dim);line-height:1.3}
+
+/* ── PANEL (live) ── */
+.panel{flex-shrink:0;border-bottom:1px solid var(--border2);background:var(--bg2);overflow:hidden;transition:max-height .3s ease;max-height:0}
+.panel.open{max-height:390px}
+.mode-toggle{display:flex;border-bottom:1px solid var(--border2)}
+.mode-btn{flex:1;padding:9px;background:var(--bg2);border:none;color:var(--ink-dim);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .18s;text-transform:uppercase;border-right:1px solid var(--border2)}
+.mode-btn:last-child{border-right:none}
+.mode-btn.active{background:var(--gold);color:var(--bg);font-weight:600}
+.search-wrap{padding:9px 14px 7px;border-bottom:1px solid var(--border)}
+.search-box{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;color:var(--ink);font-family:'Crimson Pro',serif;font-size:15px;outline:none;transition:border-color .18s}
+.search-box:focus{border-color:var(--gold-dim)}
+.search-box::placeholder{color:var(--ink-dim);opacity:.45;font-style:italic}
+.eras-scroll{overflow-y:auto;max-height:220px;padding:8px 14px 10px;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent}
+.era-group{margin-bottom:10px}
+.era-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:5px;opacity:.7}
+.chips-row{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--ink-dim);font-family:'IM Fell English',serif;font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s;user-select:none}
+.chip:hover{border-color:var(--gold-dim);color:var(--ink)}
+.chip.sel{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,0.12)}
+.chip-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;opacity:0;transition:opacity .15s}
+.chip.sel .chip-dot{opacity:1}
+.panel-note{padding:5px 14px 8px;font-style:italic;font-size:12px;color:var(--ink-dim);min-height:24px;border-top:1px solid var(--border)}
+
+/* ── TOOLBAR ── */
+.toolbar{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.toggle-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;background:transparent;border:1px solid var(--border2);border-radius:2px;color:var(--ink-dim);font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.toggle-btn.lit{border-color:var(--gold-dim);color:var(--gold)}
+.toolbar-sel{flex:1;font-family:'IM Fell English',serif;font-size:13px;color:var(--gold2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.toolbar-btns{display:flex;gap:6px;flex-shrink:0}
+.tbtn{padding:6px 10px;background:transparent;border:1px solid var(--border2);border-radius:2px;color:var(--ink-dim);font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;white-space:nowrap;transition:all .15s}
+.tbtn:hover:not(:disabled){border-color:var(--gold-dim);color:var(--gold)}
+.tbtn.export{border-color:var(--gold-dim);color:var(--gold-dim)}
+.tbtn:disabled{opacity:.3;cursor:not-allowed}
+
+/* ── DIALOGUE ── */
+.dialogue{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 16px;display:flex;flex-direction:column;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:.4;text-align:center}
+.empty-orn{font-size:28px;color:var(--gold-dim)}
+.empty-txt{font-family:'IM Fell English',serif;font-style:italic;font-size:15px;color:var(--ink-dim);line-height:1.6;max-width:280px}
+.msg{padding:12px 0;border-bottom:1px solid var(--border);animation:fadeUp .3s ease}
+.msg:last-child{border-bottom:none}
+.spk{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spk.u{color:var(--red2)}
+.spk-badge{font-size:8px;letter-spacing:1px;color:var(--gold-dim);text-transform:none;font-family:'Crimson Pro',serif;font-style:italic}
+.body{font-family:'IM Fell English',serif;font-size:16px;line-height:1.8;color:var(--ink)}
+.body p{margin-bottom:11px}
+.body p:last-child{margin-bottom:0}
+.body.u{font-family:'Crimson Pro',serif;font-style:italic;color:#b8a880;font-size:15px}
+.caret{display:inline-block;width:7px;height:15px;background:var(--gold);opacity:.75;vertical-align:-2px;margin-left:1px;animation:blinkc .9s steps(1) infinite}
+@keyframes blinkc{0%,50%{opacity:.75}51%,100%{opacity:0}}
+.dots{display:flex;gap:5px;align-items:center;padding:4px 0}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.sys-notice{font-style:italic;font-size:12px;color:var(--gold-dim);padding:6px 0 2px;opacity:.75;text-align:center}
+.err-msg{font-family:'IM Fell English',serif;font-style:italic;color:var(--red2);font-size:13px;padding:8px 0;line-height:1.6}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,60%,100%{opacity:.2;transform:scale(.8)}30%{opacity:1;transform:scale(1.1)}}
+.dot:nth-child(1){animation:blink 1.2s 0s infinite}
+.dot:nth-child(2){animation:blink 1.2s .2s infinite}
+.dot:nth-child(3){animation:blink 1.2s .4s infinite}
+
+/* ── FOOTER CONTROLS ── */
+.cont-wrap{flex-shrink:0;padding:7px 16px 0}
+.cont-btn{width:100%;padding:9px;background:transparent;border:1px solid var(--gold-dim);border-radius:2px;color:var(--gold-dim);font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:all .15s}
+.cont-btn:hover{border-color:var(--gold);color:var(--gold)}
+.cont-btn:disabled{opacity:.35;cursor:not-allowed}
+.themes-wrap{flex-shrink:0;overflow-x:auto;padding:7px 16px 0;scrollbar-width:none}
+.themes-wrap::-webkit-scrollbar{display:none}
+.themes-row{display:flex;gap:6px;width:max-content}
+.pill{padding:5px 11px;background:transparent;border:1px solid var(--border2);border-radius:20px;color:var(--ink-dim);font-family:'Crimson Pro',serif;font-size:13px;font-style:italic;cursor:pointer;white-space:nowrap}
+.pill:hover{border-color:var(--gold-dim);color:var(--ink)}
+.input-area{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:8px 16px calc(12px + var(--safe-b));background:var(--bg2);border-top:1px solid var(--border2)}
+textarea{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--ink);font-family:'Crimson Pro',serif;font-size:16px;padding:10px 12px;resize:none;min-height:44px;max-height:110px;outline:none;line-height:1.4;transition:border-color .18s}
+textarea:focus{border-color:var(--gold-dim)}
+textarea::placeholder{color:var(--ink-dim);opacity:.45;font-style:italic}
+.send-btn{padding:0 16px;height:44px;background:var(--gold);border:none;border-radius:4px;color:var(--bg);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s}
+.send-btn:disabled{opacity:.35;cursor:not-allowed}
+.send-btn:hover:not(:disabled){background:var(--gold2)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-top:1px solid var(--gold-dim);border-radius:12px 12px 0 0;width:100%;max-width:640px;max-height:86vh;display:flex;flex-direction:column}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--border2);flex-shrink:0}
+.modal-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+.modal-close{background:transparent;border:none;color:var(--ink-dim);font-size:24px;cursor:pointer;line-height:1;padding:0 2px}
+.modal-actions{display:flex;gap:8px;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.copy-btn{flex:1;padding:11px;background:var(--gold);border:none;border-radius:3px;color:var(--bg);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .15s}
+.copy-btn:hover{background:var(--gold2)}
+.copy-btn.ok{background:var(--green);color:#fff}
+.export-text{flex:1;overflow-y:auto;padding:16px 18px;font-family:'IM Fell English',serif;font-size:14px;line-height:1.8;color:var(--ink);white-space:pre-wrap;word-break:break-word;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent}
+.modal-body{flex:1;overflow-y:auto;padding:16px 18px;scrollbar-width:thin}
+.mb-p{font-size:15px;line-height:1.75;margin-bottom:12px;color:var(--ink)}
+.mb-p b{color:var(--gold2);font-weight:600}
+.mb-small{font-size:13px;font-style:italic;color:var(--ink-dim);line-height:1.65}
+.key-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:10px 12px;color:var(--ink);font-family:'Crimson Pro',serif;font-size:14px;outline:none;margin-bottom:10px}
+.key-input:focus{border-color:var(--gold-dim)}
+.mb-btn{width:100%;padding:11px;background:transparent;border:1px solid var(--gold-dim);border-radius:3px;color:var(--gold);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-bottom:8px}
+.mb-btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header>
+    <div class="title-ornament">✦ Convivium ✦</div>
+    <h1>CONVIVIUM</h1>
+    <p class="subtitle">The eternal dialogue of great minds</p>
+  </header>
+
+  <div class="srcbar">
+    <button class="srcbtn active" data-src="demo">Recorded dialogues</button>
+    <button class="srcbtn" data-src="live">Live mode</button>
+  </div>
+
+  <div class="demobar" id="demobar">
+    <div class="demobar-label">Choose a dialogue</div>
+    <div class="demo-list" id="demo-list"></div>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="solo">Monologue</button>
+      <button class="mode-btn" data-mode="dialogo">Dialogue</button>
+    </div>
+    <div class="search-wrap">
+      <input class="search-box" id="search" placeholder="Search a mind…">
+    </div>
+    <div class="eras-scroll" id="eras"></div>
+    <div class="panel-note" id="panel-note"></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="toggle-btn" id="panel-toggle" style="display:none">Minds ▼</button>
+    <span class="toolbar-sel" id="toolbar-sel"></span>
+    <div class="toolbar-btns">
+      <button class="tbtn" id="btn-sound">🔇 Voice: off</button>
+      <button class="tbtn export" id="btn-export" disabled>Export</button>
+      <button class="tbtn" id="btn-clear">Clear</button>
+    </div>
+  </div>
+
+  <div class="dialogue" id="dialogue"></div>
+
+  <div class="cont-wrap" id="cont-wrap" style="display:none">
+    <button class="cont-btn" id="cont-btn"></button>
+  </div>
+
+  <div class="themes-wrap" id="themes-wrap" style="display:none">
+    <div class="themes-row" id="themes-row"></div>
+  </div>
+
+  <div class="input-area" id="input-area" style="display:none">
+    <textarea id="ta" rows="1" placeholder="Choose a mind first…"></textarea>
+    <button class="send-btn" id="btn-send" disabled>Send</button>
+  </div>
+
+</div>
+
+<script src="demos.js"></script>
+<script>
+"use strict";
+
+/* ════════════════════════════════════════════
+   CONFIG
+   Per abilitare la modalità live in produzione,
+   imposta PROXY_URL sull'endpoint del tuo worker.
+   Lasciandolo vuoto, l'app propone il BYOK.
+════════════════════════════════════════════ */
+const PROXY_URL = "";
+const MODEL = "claude-sonnet-5";
+
+/* ════════════════════════════════════════════
+   SAFE STORAGE (degrada in memoria)
+════════════════════════════════════════════ */
+const mem = {};
+const store = {
+  get(k){ try { return window.localStorage.getItem(k); } catch(e){ return mem[k] ?? null; } },
+  set(k,v){ try { window.localStorage.setItem(k,v); } catch(e){ mem[k]=v; } },
+  del(k){ try { window.localStorage.removeItem(k); } catch(e){ delete mem[k]; } }
+};
+
+/* ════════════════════════════════════════════
+   ROSTER
+════════════════════════════════════════════ */
+const ERAS = [
+  { label: "Antichità orientale · VI–III a.C.", thinkers: [
+    { id:"buddha", name:"Buddha", p:"Sei il Buddha. Parla di sofferenza, impermanenza, non-sé, ottuplice sentiero, nirvana. Usa parabole brevi. Tono calmo, compassionevole. Non sei un dio: sei un essere umano che ha visto la natura della mente." },
+    { id:"confucio", name:"Confucio", p:"Sei Confucio. Parla di ren (benevolenza), li (rito), relazioni sociali, governo virtuoso. Tono sobrio e dignitoso, ricco di massime brevi." },
+    { id:"laozi", name:"Laozi", p:"Sei Laozi. Il Tao come principio ineffabile, wu wei (non-agire), semplicità. Aforismi paradossali e brevi. Non spiegare: mostra." },
+    { id:"sunzi", name:"Sun Tzu", p:"Sei Sun Tzu. Ogni domanda è una battaglia da vincere con strategia. Il conflitto ha leggi universali. Massime lapidarie, nessuna parola sprecata." },
+  ]},
+  { label: "Grecia antica · VI–III a.C.", thinkers: [
+    { id:"ipazia", name:"Ipazia", p:"Sei Ipazia di Alessandria, matematica, astronoma e filosofa neoplatonica. Parla con rigore intellettuale e passione per la conoscenza razionale. La verità è accessibile a chiunque sappia ragionare, uomo o donna. Martire della filosofia contro il fanatismo. Tono lucido, appassionato, coraggioso." },
+    { id:"talete", name:"Talete", p:"Sei Talete di Mileto. Il principio è l'acqua. Stupore cosmico, aforismi brevi. Il primo a cercare spiegazioni naturali senza miti." },
+    { id:"eraclito", name:"Eraclito", p:"Sei Eraclito. Il fuoco e il logos eterno. Non ci si bagna due volte nello stesso fiume. Frammenti oscuri e paradossi. Tono oracolare." },
+    { id:"democrito", name:"Democrito", p:"Sei Democrito. Il mondo è atomi e vuoto. Niente finalità, niente dèi. Il riso è la risposta saggia. Materialismo radicale e sereno." },
+    { id:"socrate", name:"Socrate", p:"Sei Socrate. Maieutica inesorabile: fai domande che smontano le certezze, dichiari di non sapere nulla. Ironia sottile. Non dai risposte dirette." },
+    { id:"platone", name:"Platone", p:"Sei Platone. Idee, anima immortale, reminiscenza, il mondo sensibile come ombra. Miti e allegorie (la caverna, il carro alato). Stile elevato e dialettico." },
+    { id:"aristotele", name:"Aristotele", p:"Sei Aristotele. Rigore logico, distinzioni precise, categorie (sostanza, forma, materia, causa). Fondamento empirico. Stile sistematico e analitico." },
+    { id:"epicuro", name:"Epicuro", p:"Sei Epicuro. Il piacere tranquillo (ataraxia) è il sommo bene. La morte non è nulla per noi. Vivi nascosto, coltiva l'amicizia." },
+    { id:"zenone", name:"Zenone Stoico", p:"Sei Zenone di Cizio. Logos cosmico, virtù come unico bene, indifferenza verso ricchezza e piacere. Vivi secondo natura." },
+  ]},
+  { label: "Roma e tarda antichità · I a.C.–V d.C.", thinkers: [
+    { id:"gesu", name:"Gesù Cristo", p:"Sei Gesù di Nazaret. Amore incondizionato, perdono, Regno di Dio, i primi saranno ultimi. Parabole e paradossi. Tono profetico e mite." },
+    { id:"seneca", name:"Seneca", p:"Sei Seneca. Brevità della vita, morte come liberazione, distacco dalle passioni. Stile epistolare e sentenzioso." },
+    { id:"marco_aurelio", name:"Marco Aurelio", p:"Sei Marco Aurelio. Imperatore stoico che scrive a sé stesso. Dovere, logos, accettazione del destino. Riflessioni intime e austere." },
+    { id:"epitteto", name:"Epitteto", p:"Sei Epitteto, schiavo diventato filosofo. Ciò che dipende da noi e ciò che non dipende. La libertà interiore è assoluta. Tono diretto." },
+    { id:"agostino", name:"Sant'Agostino", p:"Sei Sant'Agostino. Il cuore è inquieto finché non riposa in Dio. Peccato, grazia, tempo come distensio animi. Stile confessionale e appassionato." },
+  ]},
+  { label: "Medioevo e Rinascimento · IX–XVI sec.", thinkers: [
+    { id:"aquino", name:"Tommaso d'Aquino", p:"Sei Tommaso d'Aquino. Fede e ragione si completano. Le cinque vie per dimostrare l'esistenza di Dio. Stile scolastico e pacato." },
+    { id:"eckhart", name:"Meister Eckhart", p:"Sei Meister Eckhart. Distacco, fondo dell'anima, nascita del Verbo nell'anima. Linguaggio mistico e paradossale." },
+    { id:"machiavelli", name:"Machiavelli", p:"Sei Machiavelli. La politica ha leggi autonome, separate dalla morale. Il principe deve saper essere volpe e leone. Stile lucido e realista." },
+    { id:"montaigne", name:"Montaigne", p:"Sei Montaigne. Prima persona, digressioni e aneddoti. Ogni certezza è relativa. Que sais-je? Stile saggistico e autoironico." },
+    { id:"giordano_bruno", name:"Giordano Bruno", p:"Sei Giordano Bruno. L'universo è infinito e ci sono infiniti mondi. Bruciato vivo per queste idee. Ardore profetico, provocazione verso ogni ortodossia." },
+  ]},
+  { label: "Età moderna · XVII–XVIII sec.", thinkers: [
+    { id:"descartes", name:"Cartesio", p:"Sei Cartesio. Il dubbio metodico come via alla certezza. Cogito ergo sum. Distinzione tra res cogitans e res extensa. Stile sistematico e geometrico." },
+    { id:"spinoza", name:"Spinoza", p:"Sei Spinoza. Deus sive Natura: una sola sostanza infinita. Niente libero arbitrio, tutto è necessità. Stile geometrico e imperturbabile." },
+    { id:"locke", name:"Locke", p:"Sei John Locke. Tabula rasa: tutto viene dall'esperienza. I diritti naturali (vita, libertà, proprietà) precedono lo Stato." },
+    { id:"hume", name:"Hume", p:"Sei David Hume. Solo impressioni e abitudini. La causalità è abitudine. Il sé è un fascio di percezioni. Scetticismo elegante." },
+    { id:"voltaire", name:"Voltaire", p:"Sei Voltaire. Critica feroce alla superstizione religiosa e all'intolleranza. Ironia tagliente come arma. Stile mordace e brillante." },
+    { id:"rousseau", name:"Rousseau", p:"Sei Rousseau. L'uomo è naturalmente buono: la società lo corrompe. Il contratto sociale. Stile appassionato e autobiografico." },
+    { id:"kant", name:"Kant", p:"Sei Kant. La mente struttura l'esperienza. L'imperativo categorico. La cosa in sé inconoscibile. Stile sistematico e rigoroso." },
+    { id:"adam_smith", name:"Adam Smith", p:"Sei Adam Smith. La mano invisibile del mercato coordina l'interesse individuale a vantaggio collettivo. La divisione del lavoro come fonte di ricchezza. Ma anche: la simpatia morale come fondamento della società. Tono empirico, analitico, scozzese illuminista." },
+  ]},
+  { label: "Ottocento · XIX sec.", thinkers: [
+    { id:"goethe", name:"Goethe", p:"Sei Johann Wolfgang von Goethe. Poeta, scienziato, filosofo della natura. Il mondo è un tutto vivente: la pianta archetipa, la metamorfosi come legge universale. Faust come simbolo dell'anima che non si accontenta mai. Tono olimpico, curioso, capace di abbracciare contraddizioni senza risolverle." },
+    { id:"hegel", name:"Hegel", p:"Sei Hegel. La realtà è razionale. La dialettica come motore della storia. Lo Spirito assoluto che si conosce attraverso di noi." },
+    { id:"schopenhauer", name:"Schopenhauer", p:"Sei Schopenhauer. Il mondo come Volontà cieca. Il dolore è la condizione di base. Arte, compassione, ascesi come vie di liberazione." },
+    { id:"kierkegaard", name:"Kierkegaard", p:"Sei Kierkegaard. I tre stadi: estetico, etico, religioso. Il salto della fede nell'assurdo. L'angoscia come vertigine della libertà." },
+    { id:"marx", name:"Marx", p:"Sei Karl Marx. Lotta di classe, alienazione, plusvalore, dialettica storica. Il capitalismo porta in sé le contraddizioni che lo distruggeranno." },
+    { id:"nietzsche", name:"Nietzsche", p:"Sei Nietzsche. Aforismi fulminanti. La morte di Dio, volontà di potenza, eterno ritorno, oltreuomo. Critica feroce alla morale del gregge." },
+    { id:"dostoevskij", name:"Dostoevskij", p:"Sei Dostoevskij. Fede e ateismo, libertà e responsabilità, il sottosuolo dell'anima. Il bene emerge dalla sofferenza." },
+    { id:"tolstoj", name:"Tolstoj", p:"Sei Tolstoj nella fase tarda. Vangelo come programma di vita: non resistenza al male, povertà volontaria, rifiuto dello Stato." },
+    { id:"leopardi", name:"Leopardi", p:"Sei Giacomo Leopardi. La natura è matrigna indifferente al dolore umano. L'infinito come desiderio impossibile. Il pessimismo cosmico non come rassegnazione ma come lucidità eroica. Tono lirico e filosofico insieme, malinconico e precisissimo." },
+  ]},
+  { label: "Filosofi e pensatori · XX sec.", thinkers: [
+    { id:"freud", name:"Freud", p:"Sei Freud. Inconscio, Es/Io/Super-Io, pulsioni (Eros e Thanatos), sogni. La civiltà è costruita sulla repressione." },
+    { id:"jung", name:"Carl Gustav Jung", p:"Sei Carl Gustav Jung. L'inconscio collettivo, gli archetipi, l'ombra, l'anima. L'individuazione come processo di integrazione del sé profondo. Il simbolo come linguaggio dell'anima. Parla con profondità mitica e clinica insieme, mai dogmatico, sempre esplorativo." },
+    { id:"heidegger", name:"Heidegger", p:"Sei Heidegger. La differenza ontologica: Essere ed ente. Dasein, cura (Sorge), morte come possibilità più propria. La tecnica come oblio dell'Essere." },
+    { id:"wittgenstein", name:"Wittgenstein", p:"Sei Wittgenstein. I limiti del linguaggio sono i limiti del mondo. Di ciò di cui non si può parlare, si deve tacere. I giochi linguistici." },
+    { id:"weil", name:"Simone Weil", p:"Sei Simone Weil. L'afflizione come esperienza limite. La grazia che riempie il vuoto. L'attenzione come forma d'amore. Mistica e politica insieme." },
+    { id:"sartre", name:"Sartre", p:"Sei Sartre. L'esistenza precede l'essenza: siamo condannati a essere liberi. La responsabilità assoluta. La nausea. Lo sguardo dell'altro." },
+    { id:"camus", name:"Camus", p:"Sei Camus. L'assurdo nasce dal silenzio del mondo e dal grido umano di senso. Bisogna immaginare Sisifo felice. La rivolta." },
+    { id:"arendt", name:"Arendt", p:"Sei Hannah Arendt. La banalità del male: il male radicale non richiede mostri, solo l'assenza di pensiero. Lo spazio pubblico come luogo della libertà." },
+    { id:"fromm", name:"Erich Fromm", p:"Sei Erich Fromm. La fuga dalla libertà: l'uomo moderno fugge l'angoscia della libertà nel conformismo e nell'autoritarismo. L'amore come arte che si impara. La differenza tra avere ed essere. Tono caldo, psicoanalitico e umanista, mai freddo." },
+    { id:"derrida", name:"Derrida", p:"Sei Derrida. La decostruzione mostra le contraddizioni interne di ogni testo. Non c'è fuori-testo. Stile obliquo e inafferrabile." },
+    { id:"pasolini", name:"Pasolini", p:"Sei Pasolini. Furore civile e nostalgia per il mondo contadino. Il neocapitalismo omologa peggio del fascismo. Il corpo come resistenza." },
+    { id:"bauman", name:"Zygmunt Bauman", p:"Sei Zygmunt Bauman. La modernità liquida: le identità, le relazioni, le istituzioni si sono fatte fluide e instabili. Il consumismo come sostituto dell'appartenenza. La paura come condizione esistenziale del contemporaneo. Tono sociologico ma accessibile, mai rassegnato." },
+    { id:"heisenberg", name:"Heisenberg", p:"Sei Werner Heisenberg. Il principio di indeterminazione: non possiamo conoscere simultaneamente posizione e velocità di una particella. La realtà quantistica sfida ogni intuizione classica. La fisica moderna come filosofia della natura. Tono preciso, meravigliato, consapevole delle implicazioni filosofiche della scienza." },
+    { id:"junger", name:"Ernst Jünger", p:"Sei Ernst Jünger. La guerra come esperienza interiore che rivela l'essenza dell'uomo. Il Lavoratore come nuova figura antropologica. La tecnica come destino da abitare nobilmente. Lo sguardo lucido sull'abisso, senza paura né nostalgia. Tono aristocratico, visionario, distaccato." },
+  ]},
+  { label: "Rivoluzionari e figure fuori norma", thinkers: [
+    { id:"cheguevara", name:"Che Guevara", p:"Sei Ernesto Che Guevara. La rivoluzione non è un pranzo di gala. L'imperialismo è il nemico principale. Tono appassionato e romantico." },
+    { id:"rasputin", name:"Rasputin", p:"Sei Grigori Rasputin. Mistico contadino, guaritore, scandalo vivente. Dio abita nei peccatori più che nei santi. Tono ipnotico e oscuro." },
+  ]},
+  { label: "Artisti e poeti", thinkers: [
+    { id:"pirandello", name:"Pirandello", p:"Sei Luigi Pirandello. L'identità è una trappola: ognuno di noi è tanti, nessuno è uno solo. La maschera che indossiamo per gli altri finisce per soffocare il volto vero — ammesso che esista. Il teatro come specchio dell'assurdo della vita sociale. Tono amaro, lucidissimo, con un umorismo che fa male." },
+    { id:"musil", name:"Musil", p:"Sei Robert Musil. L'uomo senza qualità: in un'epoca che ha perso il centro, l'identità si dissolve in possibilità infinite mai realizzate. La precisione come forma di passione. L'ironia come unico strumento onesto per guardare la modernità. Parli con lentezza analitica e meraviglia distaccata." },
+    { id:"hesse", name:"Hesse", p:"Sei Hermann Hesse. Il cammino interiore è l'unico cammino che conta. Siddhartha, il lupo della steppa, il Gioco delle Perle di Vetro: ogni opera è una mappa dell'anima in cerca di sé stessa. Tono caldo, introspettivo, mistico senza dogmi." },
+    { id:"dante", name:"Dante", p:"Sei Dante Alighieri. Il poeta che ha fatto il viaggio dell'aldilà. Amore come forza cosmica, giustizia divina, esilio. Stile alto e appassionato." },
+    { id:"shakespeare", name:"Shakespeare", p:"Sei William Shakespeare. Il teatro come specchio del mondo. Tutti i grandi temi si intrecciano nell'anima umana. Immagini potenti, senza moralismo." },
+    { id:"leonardo", name:"Leonardo", p:"Sei Leonardo da Vinci. Arte e scienza sono la stessa cosa: osservazione profonda del reale. La natura è il tuo libro sacro. Curiosità infinita." },
+    { id:"michelangelo", name:"Michelangelo", p:"Sei Michelangelo Buonarroti. Il corpo umano come via verso il divino. La scultura libera la forma già presente nel marmo. Tono tormentato e grandioso." },
+    { id:"beethoven", name:"Beethoven", p:"Sei Ludwig van Beethoven. La musica come linguaggio dell'assoluto. Il destino trasformato in bellezza. La sordità come prova suprema. Tono tempestoso e grandioso." },
+    { id:"ungaretti", name:"Ungaretti", p:"Sei Giuseppe Ungaretti. La parola ridotta all'osso, essenziale come una pietra. La guerra come esperienza che brucia ogni retorica. Parla con frasi brevi, luminose, cariche di silenzio. Ogni parola pesa." },
+    { id:"deandre", name:"De André", p:"Sei Fabrizio De André. Dalla parte degli ultimi: i vagabondi, le prostitute, i condannati a morte. La canzone come forma di poesia civile e spirituale. L'anarchia come rispetto per ogni esistenza. Tono gentile e feroce insieme." },
+    { id:"kafka", name:"Kafka", p:"Sei Franz Kafka. Il sistema è incomprensibile e il colpevole è già colpevole prima del processo. Calma surreale di fronte all'assurdo, ironia nera." },
+    { id:"borges", name:"Borges", p:"Sei Jorge Luis Borges. La biblioteca di Babele contiene tutti i libri possibili. Il labirinto, lo specchio, il sogno come strutture del reale." },
+    { id:"picasso", name:"Picasso", p:"Sei Pablo Picasso. L'arte non è per decorare appartamenti: è un'arma offensiva. Distruggi per creare. Arroganza creativa e aforismi taglienti." },
+    { id:"lennon", name:"John Lennon", p:"Sei John Lennon. Immagina un mondo senza confini né guerre. La pace è un lavoro quotidiano. La musica come atto politico. Tono diretto e sincero." },
+    { id:"bowie", name:"David Bowie", p:"Sei David Bowie. L'identità è una performance, una maschera che rivela più di quanto nasconda. Cambiamento come filosofia. Stile obliquo e visionario." },
+    { id:"frida", name:"Frida Kahlo", p:"Sei Frida Kahlo. Il dolore fisico trasformato in arte. Il corpo come campo di battaglia. L'amore devastante come materia prima della creazione." },
+    { id:"warhol", name:"Warhol", p:"Sei Andy Warhol. Nel futuro tutti saranno famosi per 15 minuti. La superficie è tutto. Rispondi con frasi brevissime ed enigmatiche." },
+    { id:"casablancas", name:"Julian Casablancas", p:"Sei Julian Casablancas, frontman degli Strokes. La musica come atto di resistenza contro il conformismo culturale e il marketing vuoto. L'autenticità contro la produzione di massa. Tono diretto, ironico, a tratti malinconico, mai pomposo." },
+  ]},
+  { label: "Scienziati visionari", thinkers: [
+    { id:"darwin", name:"Darwin", p:"Sei Charles Darwin. La selezione naturale come meccanismo cieco. Non c'è piano, non c'è scopo: solo variazione e sopravvivenza. Tono meticoloso e stupito." },
+    { id:"einstein", name:"Einstein", p:"Sei Albert Einstein. Spazio e tempo sono relativi, la materia è energia congelata. Dio non gioca a dadi. Curiosità come valore supremo." },
+    { id:"tesla", name:"Tesla", p:"Sei Nikola Tesla. La corrente alternata, i sogni di energia libera. Incompreso e derubato. Visioni notturne, frequenze come chiave dell'universo. Tono visionario e amareggiato." },
+    { id:"feynman", name:"Feynman", p:"Sei Richard Feynman. La fisica è pura gioia. Spiegare il difficile in modo semplice è la vera prova della comprensione. Tono giocoso, allergico alla pomposità." },
+  ]},
+  { label: "Tradizioni non-occidentali", thinkers: [
+    { id:"nagarjuna", name:"Nāgārjuna", p:"Sei Nāgārjuna. Tutto è vuoto (śūnyatā): nessun ente ha esistenza propria. Il nirvana e il samsara sono la stessa cosa. Paradossi precisi." },
+    { id:"rumi", name:"Rumi", p:"Sei Jalāl ad-Dīn Rumi. Il sufismo come amore mistico verso il divino. La separazione dall'Uno come dolore fondamentale. Metafore poetiche ardenti." },
+    { id:"ibnkhaldun", name:"Ibn Khaldun", p:"Sei Ibn Khaldun. La storia ha leggi: la asabiyya (coesione sociale) fa nascere e morire le civiltà in cicli. Tono empirico e sociologico." },
+  ]},
+];
+
+const T_ALL = ERAS.reduce((a,e)=>a.concat(e.thinkers),[]);
+const THEMES = ["The meaning of life","Death","Freedom","Power","Love","Evil","God","Truth","Justice","Time","The body","Technology","Capitalism","Beauty","Revolution","Solitude","Identity"];
+
+/* ════════════════════════════════════════════
+   DIALOGHI REGISTRATI
+════════════════════════════════════════════ */
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+const S = {
+  src:"demo",
+  mode:"solo",
+  selSolo:null,
+  selDia:[],
+  msgs:[],
+  loading:false,
+  panelOpen:false,
+  search:"",
+  demoId:null,
+  playing:false,
+  playTimer:null,
+  sound:false,
+  audio:null,
+  audioWarned:false,
+};
+
+const $ = id => document.getElementById(id);
+const byId = id => T_ALL.find(t=>t.id===id) || null;
+
+/* ════════════════════════════════════════════
+   SAFE TEXT RENDERING (no innerHTML su output modello)
+════════════════════════════════════════════ */
+function renderParagraphs(container, text){
+  container.textContent = "";
+  const blocks = String(text).split(/\n{2,}/);
+  blocks.forEach(block=>{
+    const p = document.createElement("p");
+    const lines = block.split("\n");
+    lines.forEach((ln,i)=>{
+      if(i) p.appendChild(document.createElement("br"));
+      p.appendChild(document.createTextNode(ln));
+    });
+    container.appendChild(p);
+  });
+}
+
+/* ════════════════════════════════════════════
+   DIALOGUE RENDER
+════════════════════════════════════════════ */
+/* Render riconciliante: gli elementi già in pagina NON vengono ricreati.
+   Ricostruire il DOM a ogni tick faceva ripartire l'animazione fadeUp
+   su ogni messaggio, producendo il lampeggio durante la digitazione. */
+let _seq = 0;
+function keyOf(m){ if(!m._k) m._k = "m" + (++_seq); return m._k; }
+
+function createMsgEl(m){
+  if(m.role==="sys"){
+    const el=document.createElement("div"); el.className="sys-notice";
+    return {el:el, kind:"plain"};
+  }
+  if(m.role==="error"){
+    const el=document.createElement("div"); el.className="err-msg";
+    return {el:el, kind:"plain"};
+  }
+  const el=document.createElement("div"); el.className="msg";
+  const spk=document.createElement("div"); spk.className="spk"+(m.role==="user"?" u":"");
+  const body=document.createElement("div"); body.className="body"+(m.role==="user"?" u":"");
+  el.appendChild(spk); el.appendChild(body);
+  return {el:el, spk:spk, body:body, kind:"msg"};
+}
+
+function updateMsgEl(rec, m){
+  if(rec.kind==="plain"){
+    if(rec.el.textContent !== m.content) rec.el.textContent = m.content;
+    return;
+  }
+  const youLabel = "You";
+  const badgeLabel = "direct reply";
+  const name = m.role==="user" ? youLabel : (byId(m.speaker)?.name || "?");
+  if(rec._name !== name || rec._targeted !== !!m.targeted){
+    rec.spk.textContent = name;
+    if(m.targeted){
+      const b=document.createElement("span"); b.className="spk-badge"; b.textContent=badgeLabel;
+      rec.spk.appendChild(b);
+    }
+    rec._name = name; rec._targeted = !!m.targeted;
+  }
+  if(m.role==="loading"){
+    if(!rec._dots){
+      rec.body.textContent="";
+      const dots=document.createElement("span"); dots.className="dots";
+      for(let i=0;i<3;i++){ const s=document.createElement("span"); s.className="dot"; dots.appendChild(s); }
+      rec.body.appendChild(dots);
+      rec._dots = true;
+    }
+    return;
+  }
+  const text = m.typed !== undefined ? m.typed : m.content;
+  const typing = !!m.typing;
+  if(rec._text === text && rec._typing === typing) return;
+  renderParagraphs(rec.body, text);
+  if(typing){
+    const c=document.createElement("span"); c.className="caret";
+    (rec.body.lastChild || rec.body).appendChild(c);
+  }
+  rec._text = text; rec._typing = typing;
+}
+
+function renderDialogue(){
+  const box = $("dialogue");
+
+  if(!S.msgs.length){
+    box.textContent = "";
+    box._map = null;
+    const e = document.createElement("div");
+    e.className = "empty-state";
+    const o = document.createElement("div"); o.className="empty-orn"; o.textContent="⚜";
+    const t = document.createElement("p"); t.className="empty-txt";
+    t.textContent = S.src==="demo"
+      ? "Pick one of the recorded dialogues above to watch it unfold."
+      : "Choose a mind and start the dialogue.";
+    e.appendChild(o); e.appendChild(t);
+    box.appendChild(e);
+    return;
+  }
+
+  if(!box._map){ box.textContent = ""; box._map = new Map(); }
+  const map = box._map;
+
+  const wanted = S.msgs.map(keyOf);
+  const wantedSet = new Set(wanted);
+  Array.from(map.keys()).forEach(k=>{
+    if(!wantedSet.has(k)){ map.get(k).el.remove(); map.delete(k); }
+  });
+
+  S.msgs.forEach(m=>{
+    let rec = map.get(m._k);
+    if(!rec){ rec = createMsgEl(m); map.set(m._k, rec); box.appendChild(rec.el); }
+    updateMsgEl(rec, m);
+  });
+
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ════════════════════════════════════════════
+   TYPEWRITER
+════════════════════════════════════════════ */
+function typeMessage(msg, done, durationMs){
+  msg.typed = "";
+  msg.typing = true;
+  const full = msg.content;
+  let i = 0;
+  // se conosciamo la durata dell'audio, la scrittura finisce poco prima della voce
+  const ticks = durationMs && durationMs > 900
+    ? Math.max(24, Math.round((durationMs * 0.94) / 16))
+    : 260;
+  const chunk = Math.max(1, Math.ceil(full.length / ticks));
+  clearInterval(S.playTimer);
+  S.playTimer = setInterval(()=>{
+    i += chunk;
+    msg.typed = full.slice(0, i);
+    if(i >= full.length){
+      clearInterval(S.playTimer);
+      msg.typed = full;
+      msg.typing = false;
+      renderDialogue();
+      if(done) done();
+      return;
+    }
+    renderDialogue();
+  }, 16);
+}
+
+/* ════════════════════════════════════════════
+   DEMO PLAYBACK
+════════════════════════════════════════════ */
+function loadDemo(id){
+  stopPlayback();
+  S.demoId = id;
+  S.msgs = [];
+  const demo = DEMOS.find(d=>d.id===id);
+  if(!demo) return;
+  S.selDia = demo.who.slice();
+  if(!S.sound){
+    S.msgs.push({role:"sys", content:"\ud83d\udd07 Voice is off \u2014 press Voice to hear them speak."});
+  }
+  renderDemoList();
+  updateToolbar();
+  playFrom(0, demo);
+}
+
+function playFrom(idx, demo){
+  S.playing = true;
+  updateFooter();
+  const turn = demo.turns[idx];
+  if(!turn){
+    S.playing = false;
+    updateFooter();
+    updateToolbar();
+    return;
+  }
+  if(turn.role==="user"){
+    S.msgs.push({role:"user", content:turn.content});
+    renderDialogue();
+    setTimeout(()=>playFrom(idx+1, demo), 700);
+    return;
+  }
+  const msg = {role:"assistant", speaker:turn.speaker, content:turn.content, targeted:turn.targeted};
+  S.msgs.push({role:"loading", speaker:turn.speaker, targeted:turn.targeted});
+  renderDialogue();
+
+  const advance = () => { updateToolbar(); setTimeout(()=>playFrom(idx+1, demo), 520); };
+
+  setTimeout(()=>{
+    S.msgs = S.msgs.filter(m=>m.role!=="loading");
+    S.msgs.push(msg);
+
+    if(!S.sound){ typeMessage(msg, advance); return; }
+
+    // Audio pre-generato da scripts/generate_audio.py. Se manca, si degrada a solo testo.
+    const audio = new Audio("audio/" + demo.id + "-" + idx + ".mp3");
+    S.audio = audio;
+    let started = false;
+
+    const begin = (durationMs) => {
+      if(started) return;
+      started = true;
+      typeMessage(msg, () => {
+        // se la voce sta ancora parlando, aspettiamo che finisca
+        if(S.audio === audio && !audio.paused && !audio.ended){
+          audio.addEventListener("ended", advance, { once:true });
+        } else advance();
+      }, durationMs);
+    };
+
+    audio.addEventListener("loadedmetadata", () => {
+      const d = isFinite(audio.duration) ? audio.duration * 1000 : null;
+      audio.play().catch(()=>{});   // autoplay bloccato: si scrive comunque
+      begin(d);
+    });
+    audio.addEventListener("error", () => {
+      if(!S.audioWarned){
+        S.audioWarned = true;
+        S.msgs.push({role:"sys", content:"\u266a Audio files not found \u2014 run scripts/generate_audio.py, or serve the folder over HTTP."});
+      }
+      begin(null);
+    });
+    setTimeout(() => begin(null), 2500);   // rete lenta o file assente
+  }, 620);
+}
+
+function stopAudio(){
+  if(S.audio){ try { S.audio.pause(); } catch(e){} S.audio = null; }
+}
+
+function stopPlayback(){
+  clearInterval(S.playTimer);
+  stopAudio();
+  S.playing = false;
+  S.msgs.forEach(m=>{ if(m.typing){ m.typing=false; m.typed=m.content; } });
+  updateFooter();
+}
+
+function revealAll(){
+  clearInterval(S.playTimer);
+  stopAudio();
+  const demo = DEMOS.find(d=>d.id===S.demoId);
+  if(!demo) return;
+  S.msgs = demo.turns.map(t=>({
+    role:t.role, speaker:t.speaker, content:t.content, targeted:t.targeted, typed:t.content
+  }));
+  S.playing = false;
+  renderDialogue();
+  updateFooter();
+  updateToolbar();
+}
+
+function renderDemoList(){
+  const box=$("demo-list");
+  box.textContent="";
+  DEMOS.forEach(d=>{
+    const b=document.createElement("button");
+    b.className="demo-card"+(S.demoId===d.id?" on":"");
+    const t=document.createElement("div"); t.className="dc-title"; t.textContent=d.title;
+    const w=document.createElement("div"); w.className="dc-who";
+    w.textContent = d.who.map(id=>byId(id)?.name).filter(Boolean).join(" · ");
+    b.appendChild(t); b.appendChild(w);
+    b.addEventListener("click",()=>loadDemo(d.id));
+    box.appendChild(b);
+  });
+}
+
+/* ════════════════════════════════════════════
+   ROSTER PANEL
+════════════════════════════════════════════ */
+function renderEras(){
+  const box=$("eras"); box.textContent="";
+  const q=S.search.toLowerCase();
+  let any=false;
+  ERAS.forEach(era=>{
+    const list = era.thinkers.filter(t=>!q || t.name.toLowerCase().includes(q));
+    if(!list.length) return;
+    any=true;
+    const g=document.createElement("div"); g.className="era-group";
+    const l=document.createElement("div"); l.className="era-label"; l.textContent=era.label;
+    const row=document.createElement("div"); row.className="chips-row";
+    list.forEach(t=>{
+      const sel = S.mode==="solo" ? S.selSolo===t.id : S.selDia.includes(t.id);
+      const c=document.createElement("button");
+      c.className="chip"+(sel?" sel":"");
+      const dot=document.createElement("span"); dot.className="chip-dot";
+      c.appendChild(dot);
+      c.appendChild(document.createTextNode(t.name));
+      c.addEventListener("click",()=>pick(t.id));
+      row.appendChild(c);
+    });
+    g.appendChild(l); g.appendChild(row); box.appendChild(g);
+  });
+  if(!any){
+    const d=document.createElement("div");
+    d.style.cssText="color:var(--ink-dim);font-style:italic;font-size:13px;padding:8px 0";
+    d.textContent="No mind found.";
+    box.appendChild(d);
+  }
+}
+
+function pick(id){
+  if(S.mode==="solo"){
+    S.selSolo = S.selSolo===id ? null : id;
+    S.panelOpen=false; $("panel").classList.remove("open");
+  } else {
+    S.selDia = S.selDia.includes(id) ? S.selDia.filter(x=>x!==id) : S.selDia.concat([id]);
+  }
+  renderEras(); updateToolbar(); updateFooter();
+}
+
+/* ════════════════════════════════════════════
+   TOOLBAR / FOOTER
+════════════════════════════════════════════ */
+function ready(){
+  if(S.src!=="live") return false;
+  return S.mode==="solo" ? !!S.selSolo : S.selDia.length>=2;
+}
+function hasMsgs(){ return S.msgs.some(m=>m.role==="user"||m.role==="assistant"); }
+
+function updateToolbar(){
+  let label="";
+  if(S.src==="demo"){
+    const d=DEMOS.find(x=>x.id===S.demoId);
+    label = d ? d.who.map(id=>byId(id)?.name).filter(Boolean).join(" · ") : "";
+  } else if(S.mode==="solo" && S.selSolo){
+    label = byId(S.selSolo)?.name || "";
+  } else if(S.selDia.length>=2){
+    label = S.selDia.map(id=>byId(id)?.name).filter(Boolean).join(" · ");
+  }
+  $("toolbar-sel").textContent = label;
+  const tg=$("panel-toggle");
+  tg.classList.toggle("lit", !!label);
+  tg.textContent = "Minds " + (S.panelOpen ? "▲" : "▼");
+  $("btn-export").disabled = !hasMsgs();
+  $("panel-note").textContent = S.mode==="dialogo"
+    ? (S.selDia.length===0 ? "Select 2 or more minds for a dialogue"
+       : S.selDia.length+" selected · you can add more mid-conversation")
+    : "";
+}
+
+function updateFooter(){
+  const isDemo = S.src==="demo";
+  $("demobar").style.display = isDemo ? "" : "none";
+  $("panel-toggle").style.display = isDemo ? "none" : "";
+  $("themes-wrap").style.display = isDemo ? "none" : "";
+  $("input-area").style.display = isDemo ? "none" : "flex";
+  if(isDemo) $("panel").classList.remove("open");
+
+  const cw=$("cont-wrap"), cb=$("cont-btn");
+  if(isDemo){
+    if(S.playing){
+      cw.style.display=""; cb.disabled=false; cb.textContent="Show it all now ↓";
+      cb.onclick = revealAll;
+    } else if(S.demoId && hasMsgs()){
+      cw.style.display=""; cb.disabled=false; cb.textContent="Play again ↺";
+      cb.onclick = ()=>loadDemo(S.demoId);
+    } else { cw.style.display="none"; }
+  } else {
+    const show = S.mode==="dialogo" && S.selDia.length>=2 && hasMsgs() && !S.loading;
+    cw.style.display = show ? "" : "none";
+    cb.disabled = S.loading;
+    cb.textContent = "Continue the dialogue ↓";
+    cb.onclick = continueDialogue;
+  }
+
+  const ta=$("ta");
+  ta.placeholder = S.mode==="solo" && S.selSolo
+    ? "What do you ask "+byId(S.selSolo).name+"?"
+    : S.mode==="dialogo" && S.selDia.length>=2
+    ? 'Speak, or address one: "A question for you, Plato…"'
+    : "Choose a mind first…";
+  $("btn-send").disabled = !ready() || S.loading;
+}
+
+/* ════════════════════════════════════════════
+   LIVE MODE — API
+════════════════════════════════════════════ */
+function getKey(){ return store.get("convivium_key") || ""; }
+
+async function callAPI(system, messages){
+  const body = JSON.stringify({ model: MODEL, max_tokens: 1000, system: system, messages: messages });
+  let url, headers;
+  if(PROXY_URL){
+    url = PROXY_URL;
+    headers = { "Content-Type":"application/json" };
+  } else {
+    const key = getKey();
+    if(!key) throw new Error("NOKEY");
+    url = "https://api.anthropic.com/v1/messages";
+    headers = {
+      "Content-Type":"application/json",
+      "x-api-key": key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    };
+  }
+  const res = await fetch(url,{ method:"POST", headers: headers, body: body });
+  if(!res.ok){
+    const t = await res.text().catch(()=> "");
+    throw new Error("HTTP "+res.status+" "+t.slice(0,180));
+  }
+  const data = await res.json();
+  const parts = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text);
+  return parts.join("\n") || "…";
+}
+
+function detectTarget(text, sel){
+  if(!text) return null;
+  const low=text.toLowerCase();
+  for(const id of sel){
+    const t=byId(id); if(!t) continue;
+    const n=t.name.toLowerCase();
+    const pats=["per te "+n,"per "+n,"a "+n,"@"+n,n+",",n+":","chiedo a "+n,"risponda "+n];
+    for(const p of pats) if(low.includes(p)) return id;
+    if(low.substring(0,40).includes(n)) return id;
+  }
+  return null;
+}
+
+function detectInvite(text, sel){
+  if(!text) return null;
+  const low=text.toLowerCase();
+  const pats=[/aggiungi\s+(\S+)/i,/chiama\s+(\S+)/i,/invita\s+(\S+)/i,/entra\s+(\S+)/i,/porta\s+(\S+)/i];
+  for(const pat of pats){
+    const m=low.match(pat);
+    if(m){
+      const frag=m[1].trim();
+      const f=T_ALL.find(t=>!sel.includes(t.id) && t.name.toLowerCase().includes(frag));
+      if(f) return f;
+    }
+  }
+  for(const t of T_ALL) if(!sel.includes(t.id) && low.includes(t.name.toLowerCase())) return t;
+  return null;
+}
+
+function apiError(e){
+  if(e && e.message==="NOKEY")
+    return "Live mode is not configured. Open «Live mode» and add an Anthropic API key, or set PROXY_URL to a proxy endpoint.";
+  return "Could not reach the API. "+(e && e.message ? e.message : "");
+}
+
+async function doSolo(q, current){
+  const t=byId(S.selSolo);
+  S.loading=true; updateFooter();
+  S.msgs.push({role:"loading", speaker:t.id}); renderDialogue();
+  try{
+    const sys = t.p + "\n\nAlways reply in clear, elegant English. In the first person, in your own voice. Dense and deep. Four paragraphs at most. Never comment on yourself.";
+    const hist = current.map(m=>({ role: m.role==="user"?"user":"assistant", content: m.content }));
+    const tx = await callAPI(sys, hist);
+    S.msgs = S.msgs.filter(m=>m.role!=="loading");
+    const msg = {role:"assistant", content:tx, speaker:t.id};
+    S.msgs.push(msg);
+    typeMessage(msg, ()=>{ updateToolbar(); updateFooter(); });
+  }catch(e){
+    S.msgs = S.msgs.filter(m=>m.role!=="loading");
+    S.msgs.push({role:"error", content:apiError(e)});
+    renderDialogue();
+  }
+  S.loading=false; updateFooter(); updateToolbar();
+}
+
+async function doDia(userPrompt, current, sel){
+  let dia = sel.slice();
+  const notices=[];
+  const invited = detectInvite(userPrompt, dia);
+  if(invited){ dia.push(invited.id); S.selDia=dia; notices.push({role:"sys", content:"✦ "+invited.name+" joins the dialogue"}); }
+  const targeted = detectTarget(userPrompt, dia);
+  const lastSpk = current.slice().reverse().find(m=>m.speaker)?.speaker || null;
+  const idx = dia.indexOf(lastSpk);
+  const nextId = targeted || dia[(idx+1) % dia.length];
+  const t = byId(nextId);
+
+  S.loading=true; updateFooter();
+  notices.forEach(n=>S.msgs.push(n));
+  S.msgs.push({role:"loading", speaker:t.id, targeted:!!targeted});
+  renderDialogue();
+
+  try{
+    const parts = dia.map(byId).filter(Boolean);
+    const sys = "You are staging a dialogue between: "+parts.map(p=>p.name).join(", ")+".\n\n"
+      + parts.map(p=>"- "+p.name+": "+p.p).join("\n\n")
+      + "\n\nRULES: Always reply in clear English. Speak ONLY as "+t.name
+      + ", in prima persona. NON iniziare mai con il tuo nome. Reagisci concretamente a ciò che è stato detto. Max 180 parole."
+      + (targeted ? " The question was addressed directly to you: answer personally." : "");
+    const hist = current.map(m => m.role==="user"
+      ? "[Interlocutor]: "+m.content
+      : "["+(byId(m.speaker)?.name||"?")+"]: "+m.content).join("\n\n") || "(start of the dialogue)";
+    const prompt = userPrompt
+      ? "History:\n"+hist+"\n\n[Interlocutore]: \""+userPrompt+"\"\n\nNow you answer, "+t.name+"."
+      : "History:\n"+hist+"\n\nContinue the dialogue: now "+t.name+".";
+    const tx = await callAPI(sys, [{role:"user", content:prompt}]);
+    S.msgs = S.msgs.filter(m=>m.role!=="loading");
+    const msg={role:"assistant", content:tx, speaker:nextId, targeted:!!targeted};
+    S.msgs.push(msg);
+    typeMessage(msg, ()=>{ updateToolbar(); updateFooter(); });
+  }catch(e){
+    S.msgs = S.msgs.filter(m=>m.role!=="loading");
+    S.msgs.push({role:"error", content:apiError(e)});
+    renderDialogue();
+  }
+  S.loading=false; updateFooter(); updateToolbar();
+}
+
+async function send(){
+  const ta=$("ta");
+  const q=ta.value.trim();
+  if(!q || S.loading || !ready()) return;
+  ta.value="";
+  S.msgs.push({role:"user", content:q});
+  renderDialogue();
+  const current = S.msgs.filter(m=>m.role==="user"||m.role==="assistant");
+  if(S.mode==="solo") await doSolo(q, current);
+  else await doDia(q, current, S.selDia);
+}
+
+async function continueDialogue(){
+  if(S.loading || S.selDia.length<2) return;
+  await doDia(null, S.msgs.filter(m=>m.role==="user"||m.role==="assistant"), S.selDia);
+}
+
+/* ════════════════════════════════════════════
+   EXPORT
+════════════════════════════════════════════ */
+function buildExportText(){
+  const date = new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
+  const parts=[];
+  S.msgs.forEach(m=>{ const n=byId(m.speaker)?.name; if(n && parts.indexOf(n)<0) parts.push(n); });
+  const sep="─".repeat(48);
+  let out = "CONVIVIUM\nDialogue of "+date+(parts.length?"\nParticipants: "+parts.join(", "):"")+"\n"+sep+"\n\n";
+  out += S.msgs.filter(m=>["user","assistant","sys"].indexOf(m.role)>=0).map(m=>{
+    if(m.role==="sys") return "  ✦ "+m.content+"\n";
+    const who = m.role==="user" ? "YOU" : (byId(m.speaker)?.name||"?").toUpperCase();
+    return who+"\n"+m.content+"\n";
+  }).join("\n");
+  return out;
+}
+
+function openModal(title, buildBody){
+  const ov=document.createElement("div"); ov.className="modal-overlay";
+  const md=document.createElement("div"); md.className="modal";
+  const hd=document.createElement("div"); hd.className="modal-header";
+  const tt=document.createElement("span"); tt.className="modal-title"; tt.textContent=title;
+  const cl=document.createElement("button"); cl.className="modal-close"; cl.textContent="×";
+  cl.addEventListener("click",()=>ov.remove());
+  hd.appendChild(tt); hd.appendChild(cl); md.appendChild(hd);
+  buildBody(md, ()=>ov.remove());
+  ov.appendChild(md);
+  ov.addEventListener("click",e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+
+function openExport(){
+  openModal("Export conversation",(md)=>{
+    const act=document.createElement("div"); act.className="modal-actions";
+    const btn=document.createElement("button"); btn.className="copy-btn"; btn.textContent="Copy text";
+    btn.addEventListener("click",()=>{
+      const txt=buildExportText();
+      const done=()=>{ btn.textContent="✓ Copied to clipboard!"; btn.classList.add("ok");
+        setTimeout(()=>{btn.textContent="Copy text";btn.classList.remove("ok");},2400); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt,done));
+      } else fallbackCopy(txt,done);
+    });
+    act.appendChild(btn); md.appendChild(act);
+    const body=document.createElement("div"); body.className="export-text";
+    body.textContent=buildExportText();
+    md.appendChild(body);
+  });
+}
+
+function fallbackCopy(txt, done){
+  const ta=document.createElement("textarea");
+  ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); done(); }catch(e){}
+  ta.remove();
+}
+
+function openLiveSetup(){
+  openModal("Live mode",(md, close)=>{
+    const body=document.createElement("div"); body.className="modal-body";
+    const p1=document.createElement("p"); p1.className="mb-p";
+    p1.innerHTML = "The recorded dialogues work anywhere with no setup. <b>Live mode</b> generates replies in real time and needs access to the Anthropic API.";
+    const p2=document.createElement("p"); p2.className="mb-p";
+    p2.innerHTML = PROXY_URL
+      ? "This instance is wired to a proxy: live mode is ready to use."
+      : "No proxy configured. You can paste your own API key here — it stays in your browser and is sent to no server but Anthropic.";
+    body.appendChild(p1); body.appendChild(p2);
+
+    if(!PROXY_URL){
+      const inp=document.createElement("input");
+      inp.className="key-input"; inp.type="password";
+      inp.placeholder="sk-ant-…"; inp.value=getKey();
+      body.appendChild(inp);
+      const save=document.createElement("button");
+      save.className="mb-btn primary"; save.textContent="Save and enter live mode";
+      save.addEventListener("click",()=>{
+        const v=inp.value.trim();
+        if(v) store.set("convivium_key", v); else store.del("convivium_key");
+        close(); setSource("live");
+      });
+      body.appendChild(save);
+      const clear=document.createElement("button");
+      clear.className="mb-btn"; clear.textContent="Remove the stored key";
+      clear.addEventListener("click",()=>{ store.del("convivium_key"); inp.value=""; });
+      body.appendChild(clear);
+      const note=document.createElement("p"); note.className="mb-small";
+      note.textContent = "For a public demo that does not ask visitors for a key, point PROXY_URL at a worker that holds the key server-side, with rate limiting.";
+      body.appendChild(note);
+    } else {
+      const go=document.createElement("button");
+      go.className="mb-btn primary"; go.textContent="Enter live mode";
+      go.addEventListener("click",()=>{ close(); setSource("live"); });
+      body.appendChild(go);
+    }
+    md.appendChild(body);
+  });
+}
+
+/* ════════════════════════════════════════════
+   SOURCE SWITCH
+════════════════════════════════════════════ */
+function setSource(src){
+  stopPlayback();
+  S.src=src;
+  S.msgs=[];
+  S.demoId=null;
+  document.querySelectorAll(".srcbtn").forEach(b=>b.classList.toggle("active", b.dataset.src===src));
+  renderDemoList();
+  renderDialogue();
+  updateToolbar();
+  updateFooter();
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+document.querySelectorAll(".srcbtn").forEach(b=>{
+  b.addEventListener("click",()=>{
+    const src=b.dataset.src;
+    if(src==="live" && !PROXY_URL && !getKey()){ openLiveSetup(); return; }
+    setSource(src);
+  });
+});
+
+document.querySelectorAll(".mode-btn").forEach(b=>{
+  b.addEventListener("click",()=>{
+    S.mode=b.dataset.mode; S.selSolo=null; S.selDia=[]; S.msgs=[];
+    document.querySelectorAll(".mode-btn").forEach(x=>x.classList.toggle("active", x.dataset.mode===S.mode));
+    renderEras(); renderDialogue(); updateToolbar(); updateFooter();
+  });
+});
+
+$("panel-toggle").addEventListener("click",()=>{
+  S.panelOpen=!S.panelOpen;
+  $("panel").classList.toggle("open", S.panelOpen);
+  updateToolbar();
+});
+
+$("search").addEventListener("input",e=>{ S.search=e.target.value; renderEras(); });
+function updateSoundBtn(){
+  const b = $("btn-sound");
+  b.style.borderColor = S.sound ? "var(--gold-dim)" : "var(--border2)";
+  b.style.color = S.sound ? "var(--gold)" : "var(--ink-dim)";
+  b.textContent = S.sound ? "\ud83d\udd0a Voice: on" : "\ud83d\udd07 Voice: off";
+}
+
+$("btn-sound").addEventListener("click",()=>{
+  S.sound = !S.sound;
+  updateSoundBtn();
+  stopAudio();
+  S.audioWarned = false;
+  // l'autoplay richiede un'interazione: riavviando qui, la voce parte davvero
+  if(S.src === "demo" && S.demoId) loadDemo(S.demoId);
+});
+$("btn-export").addEventListener("click",openExport);
+$("btn-clear").addEventListener("click",()=>{
+  stopPlayback(); S.msgs=[]; S.demoId=null;
+  renderDemoList(); renderDialogue(); updateToolbar(); updateFooter();
+});
+$("btn-send").addEventListener("click",send);
+$("ta").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); }
+});
+
+const tr=$("themes-row");
+THEMES.forEach(t=>{
+  const b=document.createElement("button"); b.className="pill"; b.textContent=t;
+  b.addEventListener("click",()=>{ $("ta").value=t; $("ta").focus(); });
+  tr.appendChild(b);
+});
+
+// Safari (e Chrome) bloccano il caricamento di file locali via file://:
+// senza demos.js l'app non ha contenuti. Meglio dirlo che mostrare una pagina vuota.
+if (typeof DEMOS === "undefined") {
+  const box = $("dialogue");
+  box.textContent = "";
+  const wrap = document.createElement("div");
+  wrap.className = "empty-state";
+  wrap.style.opacity = "1";
+  const orn = document.createElement("div");
+  orn.className = "empty-orn"; orn.textContent = "\u26a0";
+  const msg = document.createElement("p");
+  msg.className = "empty-txt";
+  msg.style.maxWidth = "420px";
+  msg.textContent = "demos.js did not load \u2014 either the file is missing from this folder, or the page was opened by double-click and the browser blocked it.";
+  const fix = document.createElement("p");
+  fix.className = "empty-txt";
+  fix.style.cssText = "max-width:420px;font-style:normal;font-size:13px;color:var(--gold-dim);margin-top:4px";
+  fix.textContent = "Serve the folder instead:  python3 -m http.server 8000  then open  http://localhost:8000";
+  wrap.appendChild(orn); wrap.appendChild(msg); wrap.appendChild(fix);
+  box.appendChild(wrap);
+  throw new Error("demos.js non caricato: servire la cartella via HTTP");
+}
+
+updateSoundBtn();
+renderDemoList();
+renderEras();
+renderDialogue();
+updateToolbar();
+updateFooter();
+setTimeout(()=>loadDemo(DEMOS[0].id), 400);
+</script>
+</body>
+</html>
